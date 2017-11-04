@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows.Forms;
 
 namespace TagsCloudVisualization
@@ -27,7 +25,7 @@ namespace TagsCloudVisualization
             var graphics = Graphics.FromImage(image);
             foreach (var rect in rectangles)
                 graphics.DrawRectangle(Pens.Blue, rect);
-            image.Save(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "1.bmp"));
+            image.Save(Path.Combine(Directory.GetCurrentDirectory(), "1.bmp"));
         }
 
         private double GetPercentage()
@@ -45,10 +43,10 @@ namespace TagsCloudVisualization
             for (var i = 0; i < 200; i++)
             {
                 var a = new Random();
-                var k = 30.0 / i;
+                var k = a.Next(1, 5);
                 rectangles.Add(layouter.PutNextRectangle(new Size(
-                    (int)(k * a.Next(10, 50)),
-                    (int)(k * a.Next(5, 10))
+                    k * a.Next(10, 50),
+                    k * a.Next(5, 10)
                 )));
             }
         }
