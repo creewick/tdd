@@ -9,21 +9,24 @@ namespace TagsCloudVisualization
     class MyForm : Form
     {
         private readonly CircularCloudLayouter layouter = new CircularCloudLayouter(new Point(350, 350));
-        private readonly List<Rectangle> rectangles = new List<Rectangle>();
 
         public MyForm()
         {
             Size = new Size(700, 700);
-            PutRectangles();
-            SaveAsImage();
-            Console.WriteLine(GetPercentage());
+            Shown += (sender, args) =>
+            {
+                PutRectangles();
+                SaveAsImage();
+                Console.WriteLine(GetPercentage());
+            };
         }
+        
 
         private void SaveAsImage()
         {
             var image = new Bitmap(700, 700);
             var graphics = Graphics.FromImage(image);
-            foreach (var rect in rectangles)
+            foreach (var rect in layouter.Rectangles)
                 graphics.DrawRectangle(Pens.Blue, rect);
             image.Save(Path.Combine(Directory.GetCurrentDirectory(), "1.bmp"));
         }
@@ -31,33 +34,32 @@ namespace TagsCloudVisualization
         private double GetPercentage()
         {
             var actualArea = 0;
-            foreach (var rect in rectangles)
+            foreach (var rect in layouter.Rectangles)
                 actualArea += rect.Width * rect.Height;
-            var expectedArea = new CircleFinder(layouter).GetCircleArea(rectangles[rectangles.Count - 1]);
+            var expectedArea = new CircleFinder(layouter).GetCircleArea(layouter.Rectangles[layouter.Rectangles.Count - 1]);
 
             return actualArea / expectedArea;
         }
 
         private void PutRectangles()
         {
-            for (var i = 0; i < 200; i++)
+            for (var i = 0; i < 1000; i++)
             {
-                var a = new Random();
-                var k = a.Next(1, 5);
-                rectangles.Add(layouter.PutNextRectangle(new Size(
-                    k * a.Next(10, 50),
-                    k * a.Next(5, 10)
-                )));
+                layouter.PutNextRectangle(new Size(
+                    i % 2 == 0 ? 50 : 5,
+                    5
+                ));
+                Refresh();
             }
+
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             var graphics = e.Graphics;
             graphics.Clear(Color.White);
-
             
-            foreach (var rect in rectangles)
+            foreach (var rect in layouter.Rectangles)
                 graphics.DrawRectangle(Pens.Blue, rect);
         }
     }
