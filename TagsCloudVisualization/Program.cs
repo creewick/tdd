@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -17,7 +16,6 @@ namespace TagsCloudVisualization
             {
                 PutRectangles();
                 SaveAsImage();
-                Console.WriteLine(GetPercentage());
             };
         }
         
@@ -46,10 +44,9 @@ namespace TagsCloudVisualization
             for (var i = 0; i < 1000; i++)
             {
                 layouter.PutNextRectangle(new Size(
-                    i % 2 == 0 ? 50 : 5,
+                    5 * (i % 10 + 1),
                     5
                 ));
-                Refresh();
             }
 
         }
@@ -61,6 +58,8 @@ namespace TagsCloudVisualization
             
             foreach (var rect in layouter.Rectangles)
                 graphics.DrawRectangle(Pens.Blue, rect);
+
+            graphics.DrawString(GetPercentage().ToString(), DefaultFont, Brushes.Blue, new Point(0,0));
         }
     }
 

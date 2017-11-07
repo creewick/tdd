@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace TagsCloudVisualization
 {
@@ -10,15 +11,18 @@ namespace TagsCloudVisualization
         private const double Step = Math.PI / 180;
 
         public readonly Point Center;
-        public List<Rectangle> Rectangles { get; private set; }
-        public long TotalArea { get; private set; }
-        public double SpiralArgument { get; private set; }
         private bool rearranging;
+        public List<Rectangle> Rectangles { get; private set; }
+        public List<double> Arguments { get; private set; }
+        public long TotalArea => Rectangles.Sum(rect => rect.Width * rect.Height);
+
+        public double SpiralArgument { get; private set; }
 
         public CircularCloudLayouter(Point center)
             {
                 Center = center;
                 Rectangles = new List<Rectangle>();
+                Arguments = new List<double>();
             }
 
         public Rectangle PutNextRectangle(Size rectangleSize)
@@ -37,11 +41,10 @@ namespace TagsCloudVisualization
             } while (!IsFreeRectangle(rect));
 
             Rectangles.Add(rect);
-            TotalArea += rect.Width * rect.Height;
+            Arguments.Add(SpiralArgument);
 
             if (!rearranging && !LookingLikeCircle())
                 Rearrange();
-
             return rect;
         }
 
@@ -56,31 +59,28 @@ namespace TagsCloudVisualization
         private void Rearrange()
         {
             var sorted = Rectangles.OrderByDescending(x => x.Width * x.Height).ToList();
-            if (ListEquals(sorted, Rectangles)) return;
-            
+            var index = 0;
+            while (index < Rectangles.Count && Rectangles[index].Equals(sorted[index]))
+                index++;
+            if (index == Rectangles.Count) return;
+
             rearranging = true;
 
-            Rectangles = new List<Rectangle>();
-            TotalArea = 0;
-            SpiralArgument = 0;
+            var oldRectangles = Rectangles;
+            Rectangles = Rectangles.GetRange(0, index);
+            Arguments = Arguments.GetRange(0, index);
+            SpiralArgument = Arguments.Count > 0 ? Arguments[Arguments.Count - 1] : 0;
 
-            foreach (var rectangle in sorted)
-                PutNextRectangle(rectangle.Size);
+            for (var i = index; i < oldRectangles.Count; i++)
+                PutNextRectangle(sorted[i].Size);
 
             rearranging = false;
-        }
-
-        private static bool ListEquals<T>(List<T> list1, List<T> list2)
-        {
-            if (list1.Count != list2.Count)
-                return false;
-            return !list1.Where((t, i) => !Equals(t, list2[i])).Any();
         }
 
         private bool LookingLikeCircle()
         {
             var circleArea = new CircleFinder(this).GetCircleArea(Rectangles[Rectangles.Count - 1]);
-            return TotalArea / circleArea > 0.75;
+            return TotalArea / circleArea > 0.6;
         }
 
         private bool IsFreeRectangle(Rectangle rect)
