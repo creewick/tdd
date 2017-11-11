@@ -108,7 +108,7 @@ namespace TagsCloudVisualization
             var expectedArea = new CircleFinder(layouter).GetCircleArea(rect);
             var actualArea = squareSize.Height * squareSize.Width * count;
 
-            (actualArea / expectedArea).Should().BeGreaterThan(0.8);
+            (actualArea / expectedArea).Should().BeGreaterThan(0.6);
         }
 
         [Test]
