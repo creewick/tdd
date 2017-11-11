@@ -11,8 +11,8 @@ namespace TagsCloudVisualization
     public class CircularCloudLayouter_Should
     {
         private CircularCloudLayouter layouter;
-        private readonly Size squareSize = new Size(100, 100);
-        private readonly Size rectangleSize = new Size(1000, 100);
+        private readonly Size squareSize = new Size(10, 10);
+        private readonly Size rectangleSize = new Size(100, 10);
         private readonly Point center = new Point(500, 500);
 
         [SetUp]
@@ -99,7 +99,7 @@ namespace TagsCloudVisualization
         [Test]
         public void Squares_LooksLikeCircle()
         {
-            var count = 100;
+            const int count = 100;
 
             var rect = layouter.PutNextRectangle(squareSize);
             for (var i = 1; i < count; i++)
@@ -108,13 +108,13 @@ namespace TagsCloudVisualization
             var expectedArea = new CircleFinder(layouter).GetCircleArea(rect);
             var actualArea = squareSize.Height * squareSize.Width * count;
 
-            (actualArea / expectedArea).Should().BeGreaterThan(0.6);
+            (actualArea / expectedArea).Should().BeGreaterThan(0.8);
         }
 
         [Test]
         public void Rectangles_LooksLikeCircle()
         {
-            var count = 100;
+            const int count = 100;
 
             var rect = layouter.PutNextRectangle(rectangleSize);
             for (var i = 1; i < count; i++)
@@ -129,7 +129,7 @@ namespace TagsCloudVisualization
         [Test]
         public void SquaresAndRectangles_LooksLikeCircle()
         {
-            var count = 100;
+            const int count = 100;
 
             var rect = layouter.PutNextRectangle(squareSize);
             var actualArea = rect.Width * rect.Height;
