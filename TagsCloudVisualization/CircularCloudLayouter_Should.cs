@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 
 
 namespace TagsCloudVisualization
@@ -29,7 +31,7 @@ namespace TagsCloudVisualization
         }
 
         [Test]
-        public void PutNextRectangle_FirstOnCenter()
+        public void FirstRectangle_PutOnCenter()
         {
             var rect = layouter.PutNextRectangle(squareSize);
 
@@ -37,15 +39,14 @@ namespace TagsCloudVisualization
         }
 
         [Test]
-        public void PutNextRectangle_TotalAreaInc()
+        public void NegativeSize_ArgumentException()
         {
-            var rect = layouter.PutNextRectangle(squareSize);
-
-            layouter.TotalArea.Should().Be(rect.Height * rect.Width);
+            Action action = () => layouter.PutNextRectangle(new Size(-10, -10));
+            action.ShouldThrow<ArgumentException>();
         }
 
         [Test]
-        public void PutNextRectangle_AddToList()
+        public void NewRectangle_AddToList()
         {
             layouter.PutNextRectangle(squareSize);
 
@@ -53,7 +54,7 @@ namespace TagsCloudVisualization
         }
 
         [Test]
-        public void PutNextRectangle_SecondRectangle_NoIntersect()
+        public void SecondRectangle_NoIntersect()
         {
             var firstRect = layouter.PutNextRectangle(squareSize);
             var secondRect = layouter.PutNextRectangle(squareSize);
@@ -62,32 +63,32 @@ namespace TagsCloudVisualization
         }
 
         [Test, Timeout(1000)]
-        public void PutNextRectangle_ThousandSquares_FasterThanSecond()
+        public void ThousandSquares_FasterThanSecond()
         {
             for (var i = 0; i < 100; i++)
                 layouter.PutNextRectangle(squareSize);
         }
 
         [Test, Timeout(1000)]
-        public void PutNextRectangle_ThousandRectangles_FasterThanSecond()
+        public void ThousandRectangles_FasterThanSecond()
         {
             for (var i = 0; i < 100; i++)
                 layouter.PutNextRectangle(rectangleSize);
         }
 
         [Test, Timeout(1000)]
-        public void PutNextRectangle_ThousandSquaresAndRectangles_FasterThanSecond()
+        public void ThousandSquaresAndRectangles_FasterThanSecond()
         {
             for (var i = 0; i < 100; i++)
                 layouter.PutNextRectangle(i % 2 == 0 ? squareSize : rectangleSize);
         }
 
         [Test]
-        public void PutNextRectangle_BigAmount_NoIntersection()
+        public void BigAmount_NoIntersection()
         {
             for (var i = 1; i < 100; i++)
             {
-                var newRect = layouter.PutNextRectangle(squareSize);
+                layouter.PutNextRectangle(squareSize);
                 foreach (var rect in layouter.Rectangles)
                     foreach (var rect2 in layouter.Rectangles)
                         if (rect != rect2)
@@ -96,7 +97,7 @@ namespace TagsCloudVisualization
         }
 
         [Test]
-        public void PutNextRectangle_Squares_LooksLikeCircle()
+        public void Squares_LooksLikeCircle()
         {
             var count = 100;
 
@@ -111,7 +112,7 @@ namespace TagsCloudVisualization
         }
 
         [Test]
-        public void PutNextRectangle_Rectangles_LooksLikeCircle()
+        public void Rectangles_LooksLikeCircle()
         {
             var count = 100;
 
@@ -126,7 +127,7 @@ namespace TagsCloudVisualization
         }
 
         [Test]
-        public void PutNextRectangle_SquaresAndRectangles_LooksLikeCircle()
+        public void SquaresAndRectangles_LooksLikeCircle()
         {
             var count = 100;
 
@@ -146,7 +147,7 @@ namespace TagsCloudVisualization
         }
 
         [Test]
-        public void PutNextRectangle_LooksNotLikeCircle_Rearrange()
+        public void LooksNotLikeCircle_Rearrange()
         {
             var firstRect = layouter.PutNextRectangle(squareSize);
             for (var i = 1; i < 500; i++)
@@ -156,5 +157,21 @@ namespace TagsCloudVisualization
             
             layouter.Rectangles[0].Should().NotBe(firstRect);
         }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (TestContext.CurrentContext.Result.Outcome.Status != TestStatus.Failed) return;
+
+            var image = new Bitmap(1000, 1000);
+            var graphics = Graphics.FromImage(image);
+            foreach (var rect in layouter.Rectangles)
+                graphics.DrawRectangle(Pens.Blue, rect);
+            var path = Path.Combine(Directory.GetCurrentDirectory(),
+                $"{TestContext.CurrentContext.Result.FailCount}.bmp");
+            image.Save(path);
+            Console.WriteLine($"Tag cloud visualization saved to file {path}");
+        }
+
     }
 }

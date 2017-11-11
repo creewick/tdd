@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace TagsCloudVisualization
 {
     class MyForm : Form
     {
-        private readonly CircularCloudLayouter layouter = new CircularCloudLayouter(new Point(350, 350));
+        private CircularCloudLayouter layouter = new CircularCloudLayouter(new Point(350, 350));
 
         public MyForm()
         {
@@ -41,12 +42,19 @@ namespace TagsCloudVisualization
 
         private void PutRectangles()
         {
-            for (var i = 0; i < 1000; i++)
+            while (true)
             {
-                layouter.PutNextRectangle(new Size(
-                    5 * (i % 10 + 1),
-                    5
-                ));
+                layouter = new CircularCloudLayouter(new Point(350, 350));
+                for (var i = 0; i < 500; i++)
+                {
+                    var a = new Random();
+                    layouter.PutNextRectangle(new Size(
+                        a.Next(5, 50),
+                        a.Next(5, 50)
+                    ));
+                    Refresh();
+                    Thread.Sleep(100);
+                }
             }
 
         }
